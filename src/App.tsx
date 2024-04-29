@@ -1,20 +1,43 @@
-// import "./App.css";
-// import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
-// import "leaflet/dist/leaflet.css";
-// import { LatLngTuple } from "leaflet";
-// import "leaflet/dist/leaflet.css";
-// import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
-// import "leaflet-defaulticon-compatibility";
+import { useEffect, useState } from "react";
 import Map from "./components/Map";
-// const position: LatLngTuple = [51.505, -0.09];
-import { Button } from "@material-tailwind/react";
+import InputPin from "./components/InputPin";
+
+
+type Pin = {
+  position: [number, number];
+  text: string;
+};
 
 function App() {
+  const pinsTable: Pin[] = [
+    { position: [52.06, 19.25], text: "Poznań" },
+    { position: [51.11, 17.03], text: "Wrocław" },
+    { position: [52.13, 21.00], text: "Warszawa" },
+  ];
+  // usestate with pins
+  const [Pins, setPins] = useState<Pin[]>(pinsTable);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setPins((prev) => {
+  //       return prev.map((pin) => {
+  //         return {
+  //           position: [pin.position[0] + 0.1, pin.position[1] + 0.1],
+  //           text: pin.text,
+  //         };
+  //       });
+  //     });
+  //   }, 1000);
+  //   return () => {
+  //     clearInterval(interval);
+  //   };
+  // }, [] )
+
+
   return (
-    <div>
+    <div className="bg-red-600">
       <h1>React Leaflet</h1>
-      <Button>Button</Button>
-      <Map />
+      <Map pins={Pins}/>
+      <InputPin pins={Pins} setPins={setPins}/>
     </div>
   );
 }
