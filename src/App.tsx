@@ -1,41 +1,34 @@
-import { useEffect, useState } from "react";
 import Map from "./components/Map";
-import InputPin from "./components/InputPin";
-
-type Pin = {
-  position: [number, number];
-  text: string;
-};
+import { pinContext } from "./lib/pinContext";
+import { useEffect, useRef } from "react";
+import { usePinStore } from "./stores/pinStore";
+import { useAxiosClient } from "./lib/api";
+import { getPinUrl } from "./lib/urls";
+import { useAuth } from "oidc-react";
 
 function App() {
-  const pinsTable: Pin[] = [
-    { position: [52.06, 19.25], text: "Poznań" },
-    { position: [51.11, 17.03], text: "Wrocław" },
-    { position: [52.13, 21.0], text: "Warszawa" },
-  ];
+  const client = useAxiosClient();
+  const getState = async () => {
+    const response = await client.get(getPinUrl());
+    return response.data;
+  };
+  const { userData } = useAuth();
+  useEffect(() => {
+    if (userData) {
+      getState().then((data) => console.log(data));
+    }
+  }, [userData]);
 
-  const [Pins, setPins] = useState<Pin[]>(pinsTable);
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     setPins((prev) => {
-  //       return prev.map((pin) => {
-  //         return {
-  //           position: [pin.position[0] + 0.1, pin.position[1] + 0.1],
-  //           text: pin.text,
-  //         };
-  //       });
-  //     });
-  //   }, 1000);
-  //   return () => {
-  //     clearInterval(interval);
-  //   };
-  // }, [] )
+  // const store = useRef(usePinStore(await getState())).current;
 
   return (
     <div className="bg-red-600">
       <h1>React Leaflet</h1>
-      <Map pins={Pins} />
-      <InputPin pins={Pins} setPins={setPins} />
+      <div className="flex h-7">
+        {/* <pinContext.Provider value={store}>
+          <Map />
+        </pinContext.Provider> */}
+      </div>
     </div>
   );
 }

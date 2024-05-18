@@ -1,22 +1,13 @@
 import { useState } from "react";
+import { usePinStore } from "../stores/pinStore";
 
+export default function InputPin() {
+  const { addPin } = usePinStore();
 
-
-type Pin = {
-    position: [number, number];
-    text: string;
-};
-
-
-
-export default function InputPin({ pins, setPins }: { pins: Pin[]; setPins: React.Dispatch<React.SetStateAction<Pin[]>> }) {
   const [position, setPosition] = useState<[number, number]>([0, 0]);
   const [text, setText] = useState<string>("");
 
   const handleAddPin = () => {
-    setPins((prev) => {
-      return [...prev, { position, text }];
-    });
     console.log(pins);
   };
 

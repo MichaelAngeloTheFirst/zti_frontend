@@ -1,0 +1,11 @@
+export function getBaseUrl() {
+  return "http://localhost:8080";
+}
+
+export function getApiUrl() {
+  return `${getBaseUrl()}/api`;
+}
+
+export function getPinUrl() {
+  return `${getApiUrl()}/pins`;
+}
