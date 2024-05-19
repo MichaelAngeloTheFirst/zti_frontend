@@ -6,6 +6,6 @@ export function getApiUrl() {
   return `${getBaseUrl()}/api`;
 }
 
-export function getPinUrl() {
-  return `${getApiUrl()}/pins`;
+export function getCreatorPinUrl(creator_uid: string) {
+  return `${getApiUrl()}/creator/${creator_uid}/pins`;
 }

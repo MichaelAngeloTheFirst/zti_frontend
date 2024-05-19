@@ -1,7 +1,15 @@
 import { Marker, Popup } from "react-leaflet";
-// import { usePinStore } from "../stores/pinStore";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
-export default function MapMarker({ pin }: { pin: Pin }) {
+export default function MapMarker({ pin, pinId }: { pin: Pin; pinId: number }) {
   // const { removePin } = usePinStore();
 
   const removeMarker = (pin: Pin) => {
@@ -9,15 +17,24 @@ export default function MapMarker({ pin }: { pin: Pin }) {
   };
 
   return (
-    <Marker key={pin.id} position={pin.position} draggable={true}>
+    <Marker
+      key={pinId}
+      position={[pin.latitude, pin.longitude]}
+      draggable={false}
+    >
       <Popup>
-        {pin.text}
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-          onClick={() => removeMarker(pin)}
-        >
-          Remove marker
-        </button>
+        <Card className="pl-0">
+          <CardHeader className="flex justify-start pl-0 pt-0">
+            <CardTitle>{pin.pinText}</CardTitle>
+            <CardDescription>{pin.category}</CardDescription>
+          </CardHeader>
+
+          <p className="flex justify-end pr-2 pb-0 .my-0">
+            <Button variant="destructive" className="hover:bg-red-700 ">
+              Remove
+            </Button>
+          </p>
+        </Card>
       </Popup>
     </Marker>
   );

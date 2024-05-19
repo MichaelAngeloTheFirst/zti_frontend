@@ -1,7 +1,8 @@
 type Pin = {
-  id: number;
-  creator_uid: string;
-  position: [number, number];
-  text: string;
+  pinId: number;
+  creatorUid: string;
+  latitude: number;
+  longitude: number;
+  pinText: string;
   category: string;
 };

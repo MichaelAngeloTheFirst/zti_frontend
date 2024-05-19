@@ -13,15 +13,7 @@ export default function Map() {
   const store = useContext(pinContext);
   if (!store) throw new Error("Missing pinContext.Provider in the tree");
   const pins = useStore(store, (state) => state.pins);
-  const setPins = useStore(store, (state) => state.setPins);
-
-  // useEffect(() => {
-  //   fetchPins();
-  // }, []);
-
-  useEffect(() => {
-    console.log("Creator: ", creator);
-  }, [creator]);
+  console.log("Pins: ", pins);
 
   function MapFunctions() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -63,7 +55,9 @@ export default function Map() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {pins?.map((pin) => (
-          <MapMarker pin={pin} />
+          <li key={pin.pinId}>
+            <MapMarker pinId={pin.pinId} pin={pin} />
+          </li>
         ))}
         <MapFunctions />
       </MapContainer>
