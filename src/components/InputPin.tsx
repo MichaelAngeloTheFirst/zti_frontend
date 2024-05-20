@@ -1,14 +1,10 @@
-import { useState } from "react";
-import { usePinStore } from "../stores/pinStore";
+import { useAuth } from "oidc-react";
 
 export default function InputPin() {
-  const { addPin } = usePinStore();
-
-  const [position, setPosition] = useState<[number, number]>([0, 0]);
-  const [text, setText] = useState<string>("");
+  const creator_uid = useAuth().userData?.profile.sub;
 
   const handleAddPin = () => {
-    console.log(pins);
+    console.log(creator_uid);
   };
 
   return (

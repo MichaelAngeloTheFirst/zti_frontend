@@ -1,5 +1,5 @@
 export function getBaseUrl() {
-  return "http://localhost:8080";
+  return import.meta.env.VITE_BASE_URL;
 }
 
 export function getApiUrl() {
@@ -8,4 +8,12 @@ export function getApiUrl() {
 
 export function getCreatorPinUrl(creator_uid: string) {
   return `${getApiUrl()}/creator/${creator_uid}/pins`;
+}
+
+export function deletePinUrl(pinId: number) {
+  return `${getApiUrl()}/pins/${pinId}/pin`;
+}
+
+export function createPinUrl() {
+  return `${getApiUrl()}/pins`;
 }
