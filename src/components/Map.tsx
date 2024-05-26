@@ -8,38 +8,55 @@ import { useStore } from "zustand";
 import { useAxiosClient } from "@/lib/api.ts";
 import { useAtom } from "jotai";
 import categoryAtom from "@/lib/categoryAtom.ts";
-import * as React from "react";
-import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
-
+import { createPinUrl, getCreatorPinUrl } from "@/lib/urls.ts";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "oidc-react";
 
-type Checked = DropdownMenuCheckboxItemProps["checked"];
+const formSchema = z.object({
+  pinText: z.string().min(1, { message: "Pin text" }),
+  category: z.enum(["meeting", "travel", "chill"]),
+});
 
 export default function Map() {
-  const [showStatusBar, setShowStatusBar] = React.useState<Checked>(false);
+  const { userData } = useAuth();
+  const { categoryFilter, setCategoryFilter } = useState("All");
   const [position, setPosition] = useState<[number, number] | null>(null);
-  const [pinText, setPinText] = useState("");
   const { creator, setCreator } = useCreatorStore();
   const store = useContext(pinContext);
   const client = useAxiosClient();
   const [categories] = useAtom(categoryAtom);
   if (!store) throw new Error("Missing pinContext.Provider in the tree");
   const pins = useStore(store, (state) => state.pins);
-  console.log("Pins: ", pins);
+
+  function onCategoryChange(value: string) {
+    setCategoryFilter(value);
+  }
 
   function MapFunctions() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const map = useMapEvents({
       dblclick: (event) => {
         const { lat, lng } = event.latlng;
+        console.log("Lat: ", lat, "Lng: ", lng);
         setCreator(true);
         setPosition([lat, lng]);
       },
@@ -47,24 +64,39 @@ export default function Map() {
     return null;
   }
 
-  const handlePinCreate = () => {
-    if (position) {
-      console.log("Pin text:", pinText);
-      console.log("Position:", position);
-      const params = {
-        pinText,
-        latitude: position[0],
-        longitude: position[1],
-      };
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      pinText: " ",
+      category: "travel",
+    },
+  });
 
-      setPosition(null);
-      setPinText("");
-      setCreator(false);
-    }
-  };
+  function onSubmit(data: z.infer<typeof formSchema>) {
+    const { pinText, category } = data;
+    const [latitude, longitude] = position!;
+    const getState = async () => {
+      const response = await client.get(
+        getCreatorPinUrl(userData!.profile.sub)
+      );
+      return response.data;
+    };
+
+    client
+      .post(createPinUrl(), null, {
+        params: { pinText, latitude, longitude, category },
+      })
+      .then(() => {
+        getState().then((data) => {
+          console.log("Data: ", data);
+          store!.getState().setPins(data);
+          setCreator(false);
+        });
+      });
+  }
 
   return (
-    <div className="w-full bg-blue-gray-50 ">
+    <div className="w-full bg-blue-gray-50  flex-row">
       <h1>React Leaflet</h1>
       <MapContainer
         className="flex"
@@ -85,34 +117,57 @@ export default function Map() {
         ))}
         <MapFunctions />
       </MapContainer>
+      <Select onValueChange={onCategoryChange}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Category" />
+        </SelectTrigger>
+        <SelectContent>
+          {categories.map((category) => (
+            <SelectItem key={category} value={category}>
+              {category}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
       {creator && (
-        <div>
-          <h2>Create Pin</h2>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">Open</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Available categories</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {categories.map((category) => (
-                <DropdownMenuCheckboxItem
-                  checked={showStatusBar}
-                  onCheckedChange={setShowStatusBar}
-                >
-                  {category}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <input
-            type="text"
-            value={pinText}
-            onChange={(e) => setPinText(e.target.value)}
-            placeholder="Enter Pin Text"
-          />
-          <button onClick={handlePinCreate}>Create Pin</button>
-        </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <FormField
+              control={form.control}
+              name="pinText"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Pin Text</FormLabel>
+                  <FormControl>
+                    <Input placeholder="shadcn" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <FormControl>
+                    <select {...field}>
+                      {categories.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit">Submit</Button>
+          </form>
+        </Form>
       )}
       <div> end </div>
     </div>

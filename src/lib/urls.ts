@@ -15,5 +15,5 @@ export function deletePinUrl(pinId: number) {
 }
 
 export function createPinUrl() {
-  return `${getApiUrl()}/pins`;
+  return `/api/pins`;
 }
