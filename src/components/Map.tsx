@@ -8,7 +8,12 @@ import { useStore } from "zustand";
 import { useAxiosClient } from "@/lib/api.ts";
 import { useAtom } from "jotai";
 import categoryAtom from "@/lib/categoryAtom.ts";
-import { createPinUrl, getCreatorPinUrl } from "@/lib/urls.ts";
+import Control from "react-leaflet-custom-control";
+import {
+  createPinUrl,
+  getCreatorPinUrl,
+  getPinByCategoryUrl,
+} from "@/lib/urls.ts";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -28,6 +33,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "oidc-react";
 
@@ -38,7 +49,7 @@ const formSchema = z.object({
 
 export default function Map() {
   const { userData } = useAuth();
-  const { categoryFilter, setCategoryFilter } = useState("All");
+  // const { categoryFilter, setCategoryFilter } = useState("All");
   const [position, setPosition] = useState<[number, number] | null>(null);
   const { creator, setCreator } = useCreatorStore();
   const store = useContext(pinContext);
@@ -48,7 +59,16 @@ export default function Map() {
   const pins = useStore(store, (state) => state.pins);
 
   function onCategoryChange(value: string) {
-    setCategoryFilter(value);
+    // setCategoryFilter(value);
+    if (value === "All") {
+      client.get(getCreatorPinUrl(userData!.profile.sub)).then((response) => {
+        store!.getState().setPins(response.data);
+      });
+      return;
+    }
+    client.get(getPinByCategoryUrl(value)).then((response) => {
+      store!.getState().setPins(response.data);
+    });
   }
 
   function MapFunctions() {
@@ -56,7 +76,6 @@ export default function Map() {
     const map = useMapEvents({
       dblclick: (event) => {
         const { lat, lng } = event.latlng;
-        console.log("Lat: ", lat, "Lng: ", lng);
         setCreator(true);
         setPosition([lat, lng]);
       },
@@ -96,11 +115,53 @@ export default function Map() {
   }
 
   return (
-    <div className="w-full bg-blue-gray-50  flex-row">
-      <h1>React Leaflet</h1>
+    <div className="w-full h-full bg-blue-gray-50  flex-row">
+      <Dialog open={creator} onOpenChange={setCreator}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Pin Form</DialogTitle>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <FormField
+                control={form.control}
+                name="pinText"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Pin Text</FormLabel>
+                    <FormControl>
+                      <Input placeholder="shadcn" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <FormControl>
+                      <select {...field}>
+                        {categories.map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ))}
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit">Submit</Button>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
       <MapContainer
-        className="flex"
-        style={{ height: 800, width: 800 }}
+        className="fixed w-full h-full"
         center={[52.06, 19.25]}
         zoom={6}
         scrollWheelZoom={true}
@@ -110,6 +171,20 @@ export default function Map() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <Control position="topright">
+          <Select onValueChange={onCategoryChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Control>
         {pins?.map((pin) => (
           <li key={pin.pinId}>
             <MapMarker pinId={pin.pinId} pin={pin} />
@@ -117,59 +192,6 @@ export default function Map() {
         ))}
         <MapFunctions />
       </MapContainer>
-      <Select onValueChange={onCategoryChange}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Category" />
-        </SelectTrigger>
-        <SelectContent>
-          {categories.map((category) => (
-            <SelectItem key={category} value={category}>
-              {category}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {creator && (
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <FormField
-              control={form.control}
-              name="pinText"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Pin Text</FormLabel>
-                  <FormControl>
-                    <Input placeholder="shadcn" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <FormControl>
-                    <select {...field}>
-                      {categories.map((category) => (
-                        <option key={category} value={category}>
-                          {category}
-                        </option>
-                      ))}
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button type="submit">Submit</Button>
-          </form>
-        </Form>
-      )}
-      <div> end </div>
     </div>
   );
 }

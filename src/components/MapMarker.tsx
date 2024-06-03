@@ -39,15 +39,16 @@ export default function MapMarker({ pin, pinId }: { pin: Pin; pinId: number }) {
     >
       <Popup>
         <Card className="pl-0">
-          <CardHeader className="flex justify-start pl-0 pt-0">
-            <CardTitle>{pin.pinText}</CardTitle>
-            <CardDescription>{pin.category}</CardDescription>
+          <CardHeader className="flex justify-center px-0 pt-0">
+            <CardTitle className="flex justify-center">
+              {pin.category.toUpperCase()}
+            </CardTitle>
           </CardHeader>
-
-          <p className="flex justify-end pr-2 pb-0 .my-0">
+          <CardTitle>{pin.pinText}</CardTitle>
+          <p className="flex justify-end pr-2 pb-0 -m-0">
             <Button
               variant="destructive"
-              className="hover:bg-red-700 "
+              className="hover:bg-red-700"
               onClick={() => removeMarker(pin)}
             >
               Remove

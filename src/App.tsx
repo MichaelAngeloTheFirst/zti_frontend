@@ -28,9 +28,8 @@ function App() {
   }, [client, store, userData]);
 
   return (
-    <div className="bg-red-600">
-      <h1>React Leaflet</h1>
-      <div className="flex h-7">
+    <div className="w-full h-full">
+      <div className="flex w-full h-full">
         <pinContext.Provider value={store}>
           <Map />
         </pinContext.Provider>

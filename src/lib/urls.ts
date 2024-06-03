@@ -17,3 +17,7 @@ export function deletePinUrl(pinId: number) {
 export function createPinUrl() {
   return `/api/pins`;
 }
+
+export function getPinByCategoryUrl(category: string) {
+  return `${getApiUrl()}/pins/${category}/category`;
+}
