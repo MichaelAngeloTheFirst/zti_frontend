@@ -21,7 +21,6 @@ function App() {
         return response.data;
       };
       getState().then((data) => {
-        console.log("Data: ", data);
         store.getState().setPins(data);
       });
     }

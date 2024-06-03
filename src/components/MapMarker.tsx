@@ -1,10 +1,5 @@
 import { Marker, Popup } from "react-leaflet";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAxiosClient } from "@/lib/api.ts";
 import { deletePinUrl } from "@/lib/urls";
@@ -12,12 +7,10 @@ import { useContext } from "react";
 import { pinContext } from "@/lib/pinContext";
 
 export default function MapMarker({ pin, pinId }: { pin: Pin; pinId: number }) {
-  // const { removePin } = usePinStore();
   const client = useAxiosClient();
   const store = useContext(pinContext);
 
   const removeMarker = (pin: Pin) => {
-    console.log("Removing marker", pin);
     const pins = store?.getState().pins;
 
     client

@@ -49,7 +49,6 @@ const formSchema = z.object({
 
 export default function Map() {
   const { userData } = useAuth();
-  // const { categoryFilter, setCategoryFilter } = useState("All");
   const [position, setPosition] = useState<[number, number] | null>(null);
   const { creator, setCreator } = useCreatorStore();
   const store = useContext(pinContext);
@@ -59,7 +58,6 @@ export default function Map() {
   const pins = useStore(store, (state) => state.pins);
 
   function onCategoryChange(value: string) {
-    // setCategoryFilter(value);
     if (value === "All") {
       client.get(getCreatorPinUrl(userData!.profile.sub)).then((response) => {
         store!.getState().setPins(response.data);
@@ -107,7 +105,6 @@ export default function Map() {
       })
       .then(() => {
         getState().then((data) => {
-          console.log("Data: ", data);
           store!.getState().setPins(data);
           setCreator(false);
         });
@@ -177,6 +174,7 @@ export default function Map() {
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value={"All"}>All</SelectItem>
               {categories.map((category) => (
                 <SelectItem key={category} value={category}>
                   {category}

@@ -1,5 +1,5 @@
 import { atom } from "jotai";
 
-const categoryAtom = atom(["All", "meeting", "travel", "chill"]);
+const categoryAtom = atom(["meeting", "travel", "chill"]);
 
 export default categoryAtom;
